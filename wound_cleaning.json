@@ -1,0 +1,112 @@
+{
+  "_comment": "Wound-cleaning vignette as a directed graph of dialogue states (cycles allowed). Each state is one beat. A state either (a) waits for user input and branches on the matched option, (b) auto-advances to `auto.to` after `auto.after` seconds when no reply is needed, or (c) is terminal. `control` drives the robot; `ease` lowers the current dab force before acting. Edit this file to reshape the procedure without touching the engine.",
+
+  "start": "greeting",
+
+  "global": {
+    "_comment": "Options available at every input state. 'stop' aborts at any point.",
+    "options": [
+      { "intent": "stop", "to": "stopped", "utterances": ["stop", "stop please", "please stop", "stop now", "halt"] }
+    ]
+  },
+
+  "states": {
+    "greeting": {
+      "say": "Hello. I'm going to perform a wound cleaning procedure on your forearm. It should take about one minute. Before I begin, how would you rate any discomfort you're currently feeling, from one to five?",
+      "fallback": "consent"
+    },
+
+    "consent": {
+      "say": "I'll be gently cleaning the wound area. You can say 'stop' at any time. Are you ready to begin?",
+      "options": [
+        { "intent": "ready",  "to": "begin",   "utterances": ["yes", "ready", "i'm ready", "okay", "sure", "go ahead"] },
+        { "intent": "refuse", "to": "refused", "utterances": ["no", "not ready", "wait", "not yet", "hold on"] }
+      ],
+      "fallback": "consent"
+    },
+
+    "begin": {
+      "say": "I'm going to begin now. You'll feel some light pressure.",
+      "control": { "action": "DAB" },
+      "auto": { "to": "check_1", "after": 2.0 }
+    },
+
+    "check_1": {
+      "say": "How does that feel?",
+      "options": [
+        { "intent": "no_pain", "to": "move",   "utterances": ["no pain", "fine", "feels fine", "good", "nothing", "okay"] },
+        { "intent": "mild",    "to": "move",   "utterances": ["a little", "mild", "slight", "a bit", "tender"] },
+        { "intent": "pain",    "to": "ease_1", "utterances": ["it hurts", "that hurts", "ow", "ouch", "too hard", "painful", "sore"] }
+      ],
+      "fallback": "move"
+    },
+
+    "ease_1": {
+      "_comment": "Adaptive response, then re-check the same area: ease_1 -> check_1 is a cycle.",
+      "say": "I'll ease up on the pressure.",
+      "control": { "action": "DAB", "ease": 25 },
+      "auto": { "to": "check_1", "after": 2.0 }
+    },
+
+    "move": {
+      "say": "Good. I'm going to move to the next area.",
+      "control": { "action": "DAB" },
+      "auto": { "to": "silence", "after": 2.0 }
+    },
+
+    "silence": {
+      "_comment": "Naturalistic silence: the robot keeps working without speaking.",
+      "say": null,
+      "control": { "action": "DAB" },
+      "auto": { "to": "check_2", "after": 2.0 }
+    },
+
+    "check_2": {
+      "say": "How is that now?",
+      "options": [
+        { "intent": "no_pain", "to": "almost", "utterances": ["no pain", "fine", "feels fine", "good", "nothing", "okay"] },
+        { "intent": "mild",    "to": "almost", "utterances": ["a little", "mild", "slight", "a bit", "tender"] },
+        { "intent": "pain",    "to": "ease_2", "utterances": ["it hurts", "that hurts", "ow", "ouch", "too hard", "painful", "sore"] }
+      ],
+      "fallback": "almost"
+    },
+
+    "ease_2": {
+      "_comment": "ease_2 -> check_2 is a cycle.",
+      "say": "I'll ease up on the pressure.",
+      "control": { "action": "DAB", "ease": 25 },
+      "auto": { "to": "check_2", "after": 2.0 }
+    },
+
+    "almost": {
+      "say": "You're doing well. Just one more area.",
+      "control": { "action": "DAB" },
+      "auto": { "to": "complete", "after": 2.0 }
+    },
+
+    "complete": {
+      "say": "The procedure is complete.",
+      "auto": { "to": "final_check", "after": 2.0 }
+    },
+
+    "final_check": {
+      "say": "How are you feeling? Any discomfort?",
+      "fallback": "closing"
+    },
+
+    "closing": {
+      "say": "If you notice increased pain or redness, contact your care team. Thank you for your patience.",
+      "terminal": true
+    },
+
+    "refused": {
+      "say": "Understood. We won't proceed. Take care.",
+      "terminal": true
+    },
+
+    "stopped": {
+      "say": "Okay, I'm stopping now.",
+      "terminal": true
+    }
+  }
+}
