@@ -15,13 +15,18 @@ from typing import Callable, Iterator, List, Optional
 
 from graph import Option, State, StoryGraph
 
+import socket
+import struct
+
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
 
 @dataclass(frozen=True)
 class Output:
     """What the robot does on entering a state: an utterance and/or a control
     command. `say` is None for naturalistic silence."""
     say: Optional[str]
-    control: Optional[str]
+    control: Optional[float]
 
 
 class StoryEngine:
@@ -77,5 +82,7 @@ class StoryEngine:
         if state.control:
             if state.control.ease:
                 self.force = max(self.min_force, self.force - state.control.ease)
-            control = f"[control] action={state.control.action} force={self.force}%"
+            control = self.force
+            print(control)
+        sock.sendto(struct.pack("<dd", 1.0, control), ("127.0.0.1", 5005))
         return Output(say=state.say, control=control)

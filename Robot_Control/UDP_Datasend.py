@@ -27,7 +27,7 @@ while True:
 
     b = random.random() * 0.8 + 0.2
 
-    sock.sendto(struct.pack("<d", a), (HOST, PORT))  # 16 bytes, 2 little-endian doubles
+    sock.sendto(struct.pack("<dd", a, b), (HOST, PORT))  # 16 bytes, 2 little-endian doubles
 
     time.sleep(INTERVAL)
     #print('Working')

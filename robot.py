@@ -42,7 +42,8 @@ class Robot:
             elif out.control is not None:
                 print("Robot: [continues in silence]")
             if out.control is not None:
-                sock.sendto(struct.pack("<dd", 1, 2), ("127.0.0.1", 5005))
+                # sock.sendto(struct.pack("<dd", 1, out.control), ("127.0.0.1", 5005))
+                print(out.control)
 
 
 QUIT_COMMANDS = ["quit", "exit"]
@@ -65,5 +66,4 @@ def read_user_input():
 
 if __name__ == "__main__":
     print("Press Enter to let the robot continue, or type a response. Type 'quit' or press Ctrl+C to stop.")
-    sock.sendto(struct.pack("<dd", 1, 2), ("127.0.0.1", 5005))
     Robot().run()
