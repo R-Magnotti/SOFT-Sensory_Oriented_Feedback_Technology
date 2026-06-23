@@ -21,7 +21,7 @@ class Output:
     """What the robot does on entering a state: an utterance and/or a control
     command. `say` is None for naturalistic silence."""
     say: Optional[str]
-    control: Optional[float]
+    control: Optional[str]
 
 
 class StoryEngine:
@@ -77,5 +77,5 @@ class StoryEngine:
         if state.control:
             if state.control.ease:
                 self.force = max(self.min_force, self.force - state.control.ease)
-            control = self.force
+            control = f"[control] action={state.control.action} force={self.force}%"
         return Output(say=state.say, control=control)
