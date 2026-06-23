@@ -1,0 +1,10 @@
+allDatas = [];
+
+for i= 1:1000
+    data = readtable('arm_commands.csv', 'Delimiter', ',', 'Format', '%s,%f');
+    dataArr = table2array(data);
+    dataLast = dataArr(end,2);
+    allDatas = [allDatas, dataLast];
+end
+
+disp(allDatas(end-10:end));
