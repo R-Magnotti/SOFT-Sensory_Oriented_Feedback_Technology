@@ -8,6 +8,7 @@ import struct
 
 SCRIPT = "wound_cleaning.json"
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock.sendto(struct.pack("<dd", 1, 0), ("127.0.0.1", 5005))
 
 class Robot:
     def __init__(self, script=SCRIPT):
@@ -42,7 +43,7 @@ class Robot:
             elif out.control is not None:
                 print("Robot: [continues in silence]")
             if out.control is not None:
-                # sock.sendto(struct.pack("<dd", 1, out.control), ("127.0.0.1", 5005))
+                sock.sendto(struct.pack("<dd", 1, out.control), ("127.0.0.1", 5005))
                 print(out.control)
 
 

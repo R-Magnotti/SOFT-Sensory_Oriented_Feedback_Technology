@@ -83,6 +83,4 @@ class StoryEngine:
             if state.control.ease:
                 self.force = max(self.min_force, self.force - state.control.ease)
             control = self.force
-            print(control)
-        sock.sendto(struct.pack("<dd", 1.0, control), ("127.0.0.1", 5005))
         return Output(say=state.say, control=control)
