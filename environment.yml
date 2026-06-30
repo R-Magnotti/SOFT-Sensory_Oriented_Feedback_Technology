@@ -1,0 +1,23 @@
+# Conda environment for SOFT voice I/O (wound-cleaning simulation).
+#
+# Create/update:  conda env update -f environment.yml --prune
+# Activate:       conda activate SOFT
+# Run text-only (no mic/speakers, e.g. headless/CI):  SOFT_VOICE=0 python robot.py
+#
+# Notes:
+#   - portaudio comes from conda-forge so sounddevice gets a clean native
+#     binary on Apple Silicon (no Homebrew / no compile).
+#   - numpy via conda for the same reason.
+#   - pyttsx3 uses the macOS native NSSpeechSynthesizer here (no espeak needed).
+name: SOFT
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - numpy>=1.21
+  - portaudio>=19.6
+  - pip
+  - pip:
+      - pyttsx3>=2.90
+      - sounddevice>=0.4.6
+      - SpeechRecognition>=3.10
