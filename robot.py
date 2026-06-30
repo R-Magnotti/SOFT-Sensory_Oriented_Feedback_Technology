@@ -37,6 +37,9 @@ class Robot:
         self._render(self.engine.begin())
 
         while not self.engine.done:
+            ## Pausing for the user: drop the signal to 0 so the robot holds
+            ## a neutral/resting state while it waits for a reply.
+            self._send_control(0)
             speech = read_user_input(self.use_voice)
             if speech is None:                       ## quit / Ctrl-C / Ctrl-D
                 print("\nGoodbye.")
@@ -54,8 +57,12 @@ class Robot:
             elif out.control is not None:
                 print("Robot: [continues in silence]")
             if out.control is not None:
-                sock.sendto(struct.pack("<dd", 1, out.control), ("127.0.0.1", 5005))
+                self._send_control(out.control)
                 print(out.control)
+
+    def _send_control(self, value):
+        '''Emit a control signal to the robot driver over UDP.'''
+        sock.sendto(struct.pack("<dd", 1, value), ("127.0.0.1", 5005))
 
 
 QUIT_COMMANDS = ["quit", "exit"]
