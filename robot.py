@@ -3,28 +3,31 @@ from NLG import NLG
 from deliberate import StoryEngine
 from graph import StoryGraph
 from context import DiscourseContext
+import argparse
 import os
 import socket
 import struct
 
 SCRIPT = "wound_cleaning.json"
 
-## Voice I/O (mic speech-to-text + spoken text-to-speech) is on by default.
-## Set SOFT_VOICE=0 to run the old type-only loop (e.g. headless / CI).
-USE_VOICE = os.environ.get("SOFT_VOICE", "1") != "0"
+## A single switch controls all voice I/O -- mic speech-to-text (ASR) AND spoken
+## text-to-speech (TTS) together. It defaults on, seeded from SOFT_VOICE for
+## backward compatibility, and is overridable per run with --voice / --no-voice.
+DEFAULT_VOICE = os.environ.get("SOFT_VOICE", "1") != "0"
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.sendto(struct.pack("<dd", 1, 0), ("127.0.0.1", 5005))
 
 class Robot:
-    def __init__(self, script=SCRIPT, use_voice=USE_VOICE):
+    def __init__(self, script=SCRIPT, use_voice=DEFAULT_VOICE):
         ## shared dialogue state, written by NLU
         self.context = DiscourseContext()
 
         ## NLP + dialogue modules. The engine walks the graph; the NLU matches
-        ## user replies to the branches the engine offers.
+        ## user replies to the branches the engine offers. The same use_voice
+        ## switch drives the NLU's mic ASR and the NLG's spoken TTS.
         self.nlu = NLU(self.context, use_voice=use_voice)
-        self.nlg = NLG()
+        self.nlg = NLG(use_voice=use_voice)
         self.engine = StoryEngine(StoryGraph.from_file(script))
         ## reflect what the NLU actually enabled (it may have fallen back to text)
         self.use_voice = self.nlu.use_voice
@@ -79,9 +82,21 @@ def read_user_input(use_voice=False):
     return text
 
 
+def parse_args():
+    '''The one binary switch for voice I/O: --voice / --no-voice toggles mic ASR
+    and spoken TTS together (default seeded from SOFT_VOICE, on unless set to 0).'''
+    parser = argparse.ArgumentParser(description="Run the SOFT wound-cleaning vignette.")
+    parser.add_argument(
+        "--voice", action=argparse.BooleanOptionalAction, default=DEFAULT_VOICE,
+        help="Enable voice I/O -- mic speech-to-text and spoken text-to-speech "
+             "together. Use --no-voice for a silent type-only run (default: on).")
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    if USE_VOICE:
+    args = parse_args()
+    if args.voice:
         print("Voice mode: press Enter then speak, or type a response. Say/type 'quit' or press Ctrl+C to stop.")
     else:
         print("Press Enter to let the robot continue, or type a response. Type 'quit' or press Ctrl+C to stop.")
-    Robot().run()
+    Robot(use_voice=args.voice).run()
