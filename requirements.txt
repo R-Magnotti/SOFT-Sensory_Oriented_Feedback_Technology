@@ -1,0 +1,18 @@
+# Voice I/O for the wound-cleaning simulation. All free, no API keys, pip-only
+# (no conda, no system dev headers needed).
+#
+# Text-to-speech: pyttsx3 -- offline; drives the system espeak (already present).
+# Speech-to-text: sounddevice records the mic via the system libportaudio.so.2
+#                 at runtime (no compile), and SpeechRecognition transcribes it
+#                 through Google's free Web Speech endpoint (needs internet).
+#
+# NOTE: we intentionally do NOT use PyAudio -- it has no Linux wheel on PyPI and
+# would need portaudio dev headers to compile. sounddevice avoids that entirely.
+#
+# Install:  pip install -r requirements.txt
+# Run text-only (no mic/speakers, e.g. headless/CI):  SOFT_VOICE=0 python robot.py
+
+pyttsx3>=2.90
+sounddevice>=0.4.6
+SpeechRecognition>=3.10
+numpy>=1.21
